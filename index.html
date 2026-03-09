@@ -107,7 +107,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            color: var(--neon-green);
+            color: #00ff9d;
             font-size: 0.75rem;
             font-weight: 600;
         }
@@ -187,7 +187,7 @@
         <div class="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[600px] bg-cyan-500/10 blur-[120px] rounded-full -z-10 pointer-events-none"></div>
     </header>
 
-    <!-- The Problem Section (Redesigned Visualization) -->
+    <!-- The Problem Section -->
     <section id="problem" class="py-24 relative border-y border-white/5 bg-black/40">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="grid lg:grid-cols-2 gap-16 items-center">
@@ -327,18 +327,23 @@
 
             <form id="leadForm" class="glass-card p-8 space-y-5">
                 <div>
+                    <label for="fullName" class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Full Name</label>
+                    <input type="text" id="fullName" required class="w-full bg-black/50 border border-white/10 rounded-lg px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-colors" placeholder="Jane Doe">
+                </div>
+
+                <div>
                     <label for="company" class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Company Name</label>
-                    <input type="text" id="company" class="w-full bg-black/50 border border-white/10 rounded-lg px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-colors" placeholder="Acme Inc.">
+                    <input type="text" id="company" required class="w-full bg-black/50 border border-white/10 rounded-lg px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-colors" placeholder="Acme Inc.">
                 </div>
                 
                 <div>
                     <label for="tools" class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">AI Tools Needed</label>
-                    <input type="text" id="tools" class="w-full bg-black/50 border border-white/10 rounded-lg px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-colors" placeholder="e.g. GitHub Copilot, OpenAI, Jasper">
+                    <input type="text" id="tools" required class="w-full bg-black/50 border border-white/10 rounded-lg px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-colors" placeholder="e.g. GitHub Copilot, OpenAI, Jasper">
                 </div>
 
                 <div>
                     <label for="email" class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Work Email</label>
-                    <input type="email" id="email" class="w-full bg-black/50 border border-white/10 rounded-lg px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-colors" placeholder="you@company.com">
+                    <input type="email" id="email" required class="w-full bg-black/50 border border-white/10 rounded-lg px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-colors" placeholder="you@company.com">
                 </div>
 
                 <button type="submit" class="w-full bg-cyan-500 text-black font-bold py-4 rounded-lg hover:bg-cyan-400 transition-all transform hover:scale-[1.01] mt-4 shadow-lg shadow-cyan-500/20">
@@ -361,16 +366,33 @@
     <script>
         const leadForm = document.getElementById('leadForm');
 
-        leadForm.addEventListener('submit', (e) => {
+        leadForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = leadForm.querySelector('button');
             const originalText = btn.textContent;
             
             btn.textContent = "Processing...";
             btn.classList.add('opacity-75', 'cursor-not-allowed');
+            btn.disabled = true;
             
-            setTimeout(() => {
-                alert("Request Received! We will review your tools and contact you shortly.");
+            const formData = {
+                fullName: document.getElementById('fullName').value,
+                company: document.getElementById('company').value,
+                tools: document.getElementById('tools').value,
+                email: document.getElementById('email').value
+            };
+
+            const scriptURL = 'https://script.google.com/macros/s/AKfycbytIT6ilKyFd2MRkASScCMDhvonnhTqU__elHe33bjY2PdHktJvJhQ-lvBvLUvAV37E/exec';
+
+            try {
+                await fetch(scriptURL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'text/plain;charset=utf-8',
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
                 btn.textContent = "Sent ✓";
                 btn.classList.remove('bg-cyan-500', 'text-black');
                 btn.classList.add('bg-green-500', 'text-white');
@@ -380,8 +402,17 @@
                     btn.textContent = originalText;
                     btn.classList.remove('bg-green-500', 'text-white', 'opacity-75', 'cursor-not-allowed');
                     btn.classList.add('bg-cyan-500', 'text-black');
+                    btn.disabled = false;
                 }, 3000);
-            }, 1500);
+                
+            } catch (error) {
+                console.error('Error submitting form:', error);
+                alert('There was an error submitting the form. Please try again.');
+                
+                btn.textContent = originalText;
+                btn.classList.remove('opacity-75', 'cursor-not-allowed');
+                btn.disabled = false;
+            }
         });
     </script>
 </body>
